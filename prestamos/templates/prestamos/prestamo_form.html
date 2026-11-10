@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block titulo %}Nuevo préstamo{% endblock %}
+
+{% block contenido %}
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h1 class="h4 mb-1">Nuevo préstamo</h1>
+        <p class="text-body-secondary small mb-4">
+          Plazo por defecto: {{ dias }} días. Máximo {{ maximo }} préstamos activos por usuario.
+          No se puede prestar a quien tenga préstamos vencidos.
+        </p>
+        <form method="post" novalidate>
+          {% include "core/_form_campos.html" %}
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Registrar préstamo</button>
+            <a href="{% url 'prestamos:lista' %}" class="btn btn-outline-secondary">Cancelar</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

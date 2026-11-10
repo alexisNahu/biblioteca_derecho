@@ -1,0 +1,3 @@
+{% if p.estado == "devuelto" %}<span class="badge text-bg-secondary">Devuelto</span>
+{% elif p.vencido %}<span class="badge text-bg-danger">Vencido</span>
+{% else %}<span class="badge text-bg-primary">Activo</span>{% endif %}

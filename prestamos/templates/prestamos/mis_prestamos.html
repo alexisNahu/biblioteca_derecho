@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block titulo %}Mis préstamos{% endblock %}
+
+{% block contenido %}
+<h1 class="h3 mb-3">Mis préstamos</h1>
+
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table mb-0 align-middle">
+      <thead><tr><th>Libro</th><th>Prestado</th><th>Vence</th><th>Devuelto</th><th>Estado</th></tr></thead>
+      <tbody>
+      {% for p in object_list %}
+        <tr>
+          <td><a href="{% url 'prestamos:detalle' p.pk %}">{{ p.ejemplar.libro }}</a></td>
+          <td>{{ p.fecha_prestamo|date:"d/m/Y" }}</td>
+          <td class="{% if p.vencido %}text-danger fw-semibold{% endif %}">{{ p.fecha_vencimiento|date:"d/m/Y" }}</td>
+          <td>{% if p.estado == "devuelto" %}{{ p.devolucion.fecha_devolucion|date:"d/m/Y" }}{% else %}—{% endif %}</td>
+          <td>{% include "prestamos/_estado_prestamo.html" %}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="5" class="text-center text-body-secondary py-4">Todavía no tenés préstamos.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="mt-3">{% include "core/_paginacion.html" %}</div>
+{% endblock %}
