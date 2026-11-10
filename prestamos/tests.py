@@ -116,6 +116,12 @@ class VistasTests(Datos):
             reverse("prestamos:buscar_devolucion"),
             reverse("prestamos:devolver", args=[prestamo.pk]),
             reverse("prestamos:mis_prestamos"),
+            reverse("usuarios:lista"),
+            reverse("usuarios:nuevo"),
+            reverse("usuarios:editar", args=[self.socio.pk]),
+            reverse("usuarios:password", args=[self.socio.pk]),
+            reverse("usuarios:rol_lista"),
+            reverse("usuarios:rol_nuevo"),
             reverse("password_change"),
         ]
         for url in urls:
