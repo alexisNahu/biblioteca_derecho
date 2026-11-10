@@ -13,7 +13,7 @@ from usuarios.mixins import PermisoRequeridoMixin
 from usuarios.permisos import GESTIONAR_PRESTAMOS
 
 from . import services
-from .forms import PrestamoForm
+from .forms import BuscarDevolucionForm, DevolucionForm, PrestamoForm
 from .models import Prestamo
 
 
@@ -111,3 +111,55 @@ class PrestamoCreateView(PermisoRequeridoMixin, FormView):
 
     def get_success_url(self):
         return reverse("prestamos:detalle", args=[self.prestamo.pk])
+
+
+class BuscarDevolucionView(PermisoRequeridoMixin, FormView):
+    """Paso previo a la devolución: se escanea el ejemplar y se busca su préstamo activo."""
+
+    permiso = GESTIONAR_PRESTAMOS
+    form_class = BuscarDevolucionForm
+    template_name = "prestamos/buscar_devolucion.html"
+
+    def form_valid(self, form):
+        ejemplar = form.cleaned_data["ejemplar"]
+        prestamo = ejemplar.prestamos.filter(estado=Prestamo.Estado.ACTIVO).first()
+        if prestamo is None:
+            form.add_error("ejemplar", f"El ejemplar {ejemplar.codigo_barras} no tiene un préstamo activo.")
+            return self.form_invalid(form)
+        return redirect("prestamos:devolver", pk=prestamo.pk)
+
+
+class DevolucionCreateView(PermisoRequeridoMixin, FormView):
+    permiso = GESTIONAR_PRESTAMOS
+    form_class = DevolucionForm
+    template_name = "prestamos/devolucion_form.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.prestamo = get_object_or_404(
+            Prestamo.objects.select_related("ejemplar__libro", "usuario"), pk=kwargs["pk"]
+        )
+        if request.user.is_authenticated and self.prestamo.estado != Prestamo.Estado.ACTIVO:
+            messages.warning(request, "Este préstamo ya fue devuelto.")
+            return redirect("prestamos:detalle", pk=self.prestamo.pk)
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["prestamo"] = self.prestamo
+        context["hoy"] = timezone.localdate()
+        return context
+
+    def form_valid(self, form):
+        try:
+            services.devolver(self.prestamo, recibido_por=self.request.user, **form.cleaned_data)
+        except ValidationError as e:
+            for mensaje in e.messages:
+                form.add_error(None, mensaje)
+            return self.form_invalid(form)
+        mensaje = f"Devolución registrada: «{self.prestamo.ejemplar.libro}»."
+        if self.prestamo.vencido:
+            dias = (timezone.localdate() - self.prestamo.fecha_vencimiento).days
+            messages.warning(self.request, f"{mensaje} Se devolvió con {dias} día(s) de atraso.")
+        else:
+            messages.success(self.request, mensaje)
+        return redirect("prestamos:detalle", pk=self.prestamo.pk)

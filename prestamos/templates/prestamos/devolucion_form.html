@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block titulo %}Devolución{% endblock %}
+
+{% block contenido %}
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h1 class="h4 mb-3">Registrar devolución</h1>
+
+        <div class="alert {% if prestamo.vencido %}alert-warning{% else %}alert-light border{% endif %}">
+          <div><strong>{{ prestamo.ejemplar.libro }}</strong> <code>[{{ prestamo.ejemplar.codigo_barras }}]</code></div>
+          <div>Prestado a {{ prestamo.usuario.nombre_completo }} el {{ prestamo.fecha_prestamo|date:"d/m/Y" }}</div>
+          <div>Vence el {{ prestamo.fecha_vencimiento|date:"d/m/Y" }}
+            {% if prestamo.vencido %}<strong>— vencido hace {{ prestamo.fecha_vencimiento|timesince:hoy }}</strong>{% endif %}
+          </div>
+        </div>
+
+        <form method="post" novalidate>
+          {% include "core/_form_campos.html" %}
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-success"><i class="bi bi-check-lg"></i> Confirmar devolución</button>
+            <a href="{% url 'prestamos:detalle' prestamo.pk %}" class="btn btn-outline-secondary">Cancelar</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

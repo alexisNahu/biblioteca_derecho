@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block titulo %}Registrar devolución{% endblock %}
+
+{% block contenido %}
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h1 class="h4 mb-1">Registrar devolución</h1>
+        <p class="text-body-secondary small mb-4">Escaneá o escribí el código de barras del ejemplar que se devuelve.</p>
+        <form method="post" novalidate>
+          {% include "core/_form_campos.html" %}
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-success"><i class="bi bi-search"></i> Buscar préstamo</button>
+            <a href="{% url 'prestamos:lista' %}" class="btn btn-outline-secondary">Cancelar</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
