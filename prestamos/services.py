@@ -43,3 +43,27 @@ def prestar(ejemplar, usuario, fecha_vencimiento, registrado_por=None, observaci
     ejemplar.estado = Ejemplar.Estado.PRESTADO
     ejemplar.save(update_fields=["estado"])
     return prestamo
+
+
+@transaction.atomic
+def devolver(prestamo, recibido_por=None, estado_ejemplar=Ejemplar.Estado.DISPONIBLE, observaciones=""):
+    prestamo = Prestamo.objects.select_for_update().select_related("ejemplar").get(pk=prestamo.pk)
+
+    if prestamo.estado != Prestamo.Estado.ACTIVO:
+        raise ValidationError("Este préstamo ya fue devuelto.")
+    if estado_ejemplar == Ejemplar.Estado.PRESTADO:
+        raise ValidationError("El ejemplar devuelto no puede quedar en estado «prestado».")
+
+    devolucion = Devolucion.objects.create(
+        prestamo=prestamo,
+        recibido_por=recibido_por,
+        estado_ejemplar=estado_ejemplar,
+        observaciones=observaciones,
+    )
+    prestamo.estado = Prestamo.Estado.DEVUELTO
+    prestamo.save(update_fields=["estado"])
+
+    ejemplar = prestamo.ejemplar
+    ejemplar.estado = estado_ejemplar
+    ejemplar.save(update_fields=["estado"])
+    return devolucion
