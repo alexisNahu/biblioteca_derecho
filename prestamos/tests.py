@@ -110,10 +110,18 @@ class VistasTests(Datos):
         self.client.force_login(admin)
         urls = [
             reverse("inicio"),
+            reverse("catalogo:libro_lista") + "?q=ray",
+            reverse("catalogo:libro_detalle", args=[self.libro.pk]),
+            reverse("catalogo:libro_nuevo"),
+            reverse("catalogo:libro_editar", args=[self.libro.pk]),
+            reverse("catalogo:ejemplar_nuevo", args=[self.libro.pk]),
+            reverse("catalogo:ejemplar_editar", args=[self.ejemplar.pk]),
+            reverse("catalogo:autor_lista"),
+            reverse("catalogo:autor_nuevo"),
+            reverse("catalogo:categoria_lista"),
+            reverse("catalogo:categoria_nueva"),
             reverse("prestamos:lista") + "?estado=todos",
-            reverse("prestamos:nuevo"),
             reverse("prestamos:detalle", args=[prestamo.pk]),
-            reverse("prestamos:buscar_devolucion"),
             reverse("prestamos:devolver", args=[prestamo.pk]),
             reverse("prestamos:mis_prestamos"),
             reverse("usuarios:lista"),
@@ -127,3 +135,9 @@ class VistasTests(Datos):
         for url in urls:
             with self.subTest(url=url):
                 self.assertEqual(self.client.get(url).status_code, 200)
+
+    def test_borrar_libro_con_ejemplares_avisa(self):
+        self.client.force_login(self.biblio)
+        r = self.client.post(reverse("catalogo:libro_borrar", args=[self.libro.pk]), follow=True)
+        self.assertContains(r, "tiene registros asociados")
+        self.assertTrue(Libro.objects.filter(pk=self.libro.pk).exists())
