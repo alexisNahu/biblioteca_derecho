@@ -29,6 +29,14 @@
         </li>
         {% endif %}
         <li class="nav-item"><a class="nav-link" href="{% url 'prestamos:mis_prestamos' %}">Mis préstamos</a></li>
+        {% if "usuarios.gestionar" in permisos %}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Administración</a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="{% url 'usuarios:lista' %}">Usuarios</a></li>
+          </ul>
+        </li>
+        {% endif %}
       </ul>
       <ul class="navbar-nav">
         <li class="nav-item dropdown">
