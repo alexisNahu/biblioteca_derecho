@@ -1,10 +1,58 @@
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
+from django.contrib.messages.views import SuccessMessageMixin
+from django.db.models import ProtectedError
+from django.shortcuts import redirect, render
 from django.utils import timezone
+from django.views.generic import DeleteView
 
 from catalogo.models import Ejemplar, Libro
 from prestamos.models import Prestamo
 from usuarios.permisos import GESTIONAR_PRESTAMOS
+
+
+class FormularioMixin(SuccessMessageMixin):
+    """Vistas de alta/edición que usan la plantilla genérica core/form.html."""
+
+    template_name = "core/form.html"
+    titulo = ""
+    cancelar_url = None
+
+    def get_titulo(self):
+        return self.titulo
+
+    def get_cancelar_url(self):
+        return self.cancelar_url or self.success_url
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["titulo"] = self.get_titulo()
+        context["cancelar_url"] = self.get_cancelar_url()
+        return context
+
+
+class BorrarView(DeleteView):
+    """Confirmación de borrado que avisa en lugar de fallar si hay registros asociados (PROTECT)."""
+
+    template_name = "core/confirmar_borrado.html"
+
+    def get_cancelar_url(self):
+        return self.get_success_url()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["cancelar_url"] = self.get_cancelar_url()
+        return context
+
+    def form_valid(self, form):
+        nombre = str(self.object)
+        try:
+            response = super().form_valid(form)
+        except ProtectedError:
+            messages.error(self.request, f"No se puede borrar «{nombre}» porque tiene registros asociados.")
+            return redirect(self.get_cancelar_url())
+        messages.success(self.request, f"«{nombre}» fue borrado.")
+        return response
 
 
 @login_required
