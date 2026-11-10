@@ -17,6 +17,12 @@
     </button>
     <div class="collapse navbar-collapse" id="menu">
       <ul class="navbar-nav me-auto">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Catálogo</a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="{% url 'catalogo:libro_lista' %}">Libros</a></li>
+          </ul>
+        </li>
         {% if "prestamos.gestionar" in permisos %}
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Préstamos</a>

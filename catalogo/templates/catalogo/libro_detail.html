@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block titulo %}{{ libro.titulo }}{% endblock %}
+
+{% block contenido %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'catalogo:libro_lista' %}">Libros</a></li>
+    <li class="breadcrumb-item active">{{ libro.titulo }}</li>
+  </ol>
+</nav>
+
+<div class="card shadow-sm mb-4">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+      <h1 class="h3">{{ libro.titulo }}</h1>
+      {% if "catalogo.gestionar" in permisos %}
+      <div class="d-flex gap-2">
+        <a href="{% url 'catalogo:libro_editar' libro.pk %}" class="btn btn-outline-primary btn-sm"><i class="bi bi-pencil"></i> Editar</a>
+        <a href="{% url 'catalogo:libro_borrar' libro.pk %}" class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i> Borrar</a>
+      </div>
+      {% endif %}
+    </div>
+    <dl class="row mb-0">
+      <dt class="col-sm-3">Autores</dt>
+      <dd class="col-sm-9">{% for a in libro.autores.all %}{{ a.nombre }} {{ a.apellido }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}</dd>
+      <dt class="col-sm-3">Categorías</dt>
+      <dd class="col-sm-9">{% for c in libro.categorias.all %}<span class="badge text-bg-light border">{{ c.nombre }}</span> {% empty %}—{% endfor %}</dd>
+      <dt class="col-sm-3">ISBN</dt><dd class="col-sm-9">{{ libro.isbn|default:"—" }}</dd>
+      <dt class="col-sm-3">Editorial</dt><dd class="col-sm-9">{{ libro.editorial|default:"—" }}</dd>
+      <dt class="col-sm-3">Año</dt><dd class="col-sm-9">{{ libro.anio_publicacion|default:"—" }}</dd>
+      <dt class="col-sm-3">Código Dewey</dt><dd class="col-sm-9">{{ libro.codigo_dewey|default:"—" }}</dd>
+    </dl>
+  </div>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-2">
+  <h2 class="h5 mb-0">Ejemplares</h2>
+  {% if "catalogo.gestionar" in permisos %}
+  <a href="{% url 'catalogo:ejemplar_nuevo' libro.pk %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> Agregar ejemplar</a>
+  {% endif %}
+</div>
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table mb-0 align-middle">
+      <thead><tr><th>Código de barras</th><th>Ubicación</th><th>Estado</th><th></th></tr></thead>
+      <tbody>
+      {% for e in libro.ejemplares.all %}
+        <tr>
+          <td><code>{{ e.codigo_barras }}</code></td>
+          <td>{{ e.ubicacion|default:"—" }}</td>
+          <td>
+            {% include "catalogo/_estado_ejemplar.html" with estado=e.estado etiqueta=e.get_estado_display %}
+            {% if "prestamos.gestionar" in permisos %}
+              {% for p in e.prestamos_activos %}
+              <span class="small text-body-secondary ms-1">a {{ p.usuario.nombre_completo }}, vence {{ p.fecha_vencimiento|date:"d/m/Y" }}</span>
+              {% endfor %}
+            {% endif %}
+          </td>
+          <td class="text-end text-nowrap">
+            {% if "prestamos.gestionar" in permisos %}
+              {% if e.estado == "disponible" %}
+              <a href="{% url 'prestamos:nuevo' %}?ejemplar={{ e.codigo_barras|urlencode }}" class="btn btn-sm btn-outline-primary">Prestar</a>
+              {% endif %}
+              {% for p in e.prestamos_activos %}
+              <a href="{% url 'prestamos:devolver' p.pk %}" class="btn btn-sm btn-outline-success">Devolver</a>
+              {% endfor %}
+            {% endif %}
+            {% if "catalogo.gestionar" in permisos %}
+            <a href="{% url 'catalogo:ejemplar_editar' e.pk %}" class="btn btn-sm btn-outline-secondary" title="Editar"><i class="bi bi-pencil"></i></a>
+            <a href="{% url 'catalogo:ejemplar_borrar' e.pk %}" class="btn btn-sm btn-outline-danger" title="Borrar"><i class="bi bi-trash"></i></a>
+            {% endif %}
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="4" class="text-center text-body-secondary py-4">Este libro todavía no tiene ejemplares.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

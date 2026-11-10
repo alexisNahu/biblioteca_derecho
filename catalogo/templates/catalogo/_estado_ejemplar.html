@@ -1,0 +1,4 @@
+{% if estado == "disponible" %}<span class="badge text-bg-success">{{ etiqueta }}</span>
+{% elif estado == "prestado" %}<span class="badge text-bg-warning">{{ etiqueta }}</span>
+{% elif estado == "en_reparacion" %}<span class="badge text-bg-info">{{ etiqueta }}</span>
+{% else %}<span class="badge text-bg-secondary">{{ etiqueta }}</span>{% endif %}

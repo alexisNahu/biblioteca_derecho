@@ -24,7 +24,7 @@
       <div class="card-body">
         <dl class="row mb-0">
           <dt class="col-sm-4">Libro</dt>
-          <dd class="col-sm-8">{{ prestamo.ejemplar.libro }}</dd>
+          <dd class="col-sm-8"><a href="{% url 'catalogo:libro_detalle' prestamo.ejemplar.libro_id %}">{{ prestamo.ejemplar.libro }}</a></dd>
           <dt class="col-sm-4">Ejemplar</dt><dd class="col-sm-8"><code>{{ prestamo.ejemplar.codigo_barras }}</code></dd>
           <dt class="col-sm-4">Usuario</dt><dd class="col-sm-8">{{ prestamo.usuario.nombre_completo }} <span class="text-body-secondary">({{ prestamo.usuario.email }})</span></dd>
           <dt class="col-sm-4">Fecha</dt><dd class="col-sm-8">{{ prestamo.fecha_prestamo|date:"d/m/Y H:i" }}</dd>
