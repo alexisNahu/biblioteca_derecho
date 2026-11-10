@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block titulo %}Inicio{% endblock %}
+
+{% block contenido %}
+<h1 class="h3 mb-4">Hola, {{ user.nombre }}</h1>
+
+{% if "prestamos.gestionar" in permisos %}
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="card shadow-sm h-100"><div class="card-body">
+      <div class="text-body-secondary small">Libros</div>
+      <div class="fs-3 fw-semibold">{{ total_libros }}</div>
+    </div></div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card shadow-sm h-100"><div class="card-body">
+      <div class="text-body-secondary small">Ejemplares disponibles</div>
+      <div class="fs-3 fw-semibold">{{ ejemplares_disponibles }}</div>
+    </div></div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card shadow-sm h-100"><div class="card-body">
+      <div class="text-body-secondary small">Préstamos activos</div>
+      <div class="fs-3 fw-semibold">{{ prestamos_activos }}</div>
+    </div></div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card shadow-sm h-100 {% if total_vencidos %}border-danger{% endif %}"><div class="card-body">
+      <div class="text-body-secondary small">Préstamos vencidos</div>
+      <div class="fs-3 fw-semibold {% if total_vencidos %}text-danger{% endif %}">{{ total_vencidos }}</div>
+    </div></div>
+  </div>
+</div>
+
+<div class="d-flex gap-2 mb-4">
+  <a href="{% url 'prestamos:nuevo' %}" class="btn btn-primary"><i class="bi bi-box-arrow-up-right"></i> Nuevo préstamo</a>
+  <a href="{% url 'prestamos:buscar_devolucion' %}" class="btn btn-success"><i class="bi bi-box-arrow-in-down-left"></i> Registrar devolución</a>
+</div>
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span>Préstamos vencidos</span>
+    {% if total_vencidos %}<a href="{% url 'prestamos:lista' %}?estado=vencidos" class="small">Ver todos</a>{% endif %}
+  </div>
+  {% if vencidos %}
+  <div class="table-responsive">
+    <table class="table table-hover mb-0 align-middle">
+      <thead><tr><th>Libro</th><th>Usuario</th><th>Venció</th><th></th></tr></thead>
+      <tbody>
+      {% for p in vencidos %}
+        <tr>
+          <td>{{ p.ejemplar.libro }} <span class="text-body-secondary small">[{{ p.ejemplar.codigo_barras }}]</span></td>
+          <td>{{ p.usuario.nombre_completo }}</td>
+          <td class="text-danger">{{ p.fecha_vencimiento|date:"d/m/Y" }}</td>
+          <td class="text-end"><a href="{% url 'prestamos:devolver' p.pk %}" class="btn btn-sm btn-outline-success">Devolver</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="card-body text-body-secondary">No hay préstamos vencidos.</div>
+  {% endif %}
+</div>
+{% endif %}
+
+<div class="card shadow-sm">
+  <div class="card-header">Mis préstamos activos</div>
+  {% if mis_prestamos %}
+  <ul class="list-group list-group-flush">
+    {% for p in mis_prestamos %}
+    <li class="list-group-item d-flex justify-content-between">
+      <span>{{ p.ejemplar.libro }}</span>
+      <span class="{% if p.vencido %}text-danger{% else %}text-body-secondary{% endif %}">vence {{ p.fecha_vencimiento|date:"d/m/Y" }}</span>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <div class="card-body text-body-secondary">No tenés préstamos activos.</div>
+  {% endif %}
+</div>
+{% endblock %}

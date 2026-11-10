@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block titulo %}{{ titulo }}{% endblock %}
+
+{% block contenido %}
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h1 class="h4 mb-4">{{ titulo }}</h1>
+        <form method="post" novalidate>
+          {% include "core/_form_campos.html" %}
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Guardar</button>
+            {% if cancelar_url %}<a href="{{ cancelar_url }}" class="btn btn-outline-secondary">Cancelar</a>{% endif %}
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
