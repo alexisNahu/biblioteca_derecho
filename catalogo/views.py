@@ -99,6 +99,82 @@ class LibroDeleteView(PermisoRequeridoMixin, BorrarView):
 
 # Autores
 
+class AutorListView(PermisoRequeridoMixin, ListView):
+    model = Autor
+    paginate_by = 30
+
+    def get_queryset(self):
+        qs = Autor.objects.annotate(total_libros=Count("libros")).order_by("apellido", "nombre")
+        q = self.request.GET.get("q", "").strip()
+        if q:
+            qs = qs.filter(Q(nombre__icontains=q) | Q(apellido__icontains=q))
+        return qs
+
+
+class AutorCreateView(PermisoRequeridoMixin, FormularioMixin, CreateView):
+    permiso = GESTIONAR_CATALOGO
+    model = Autor
+    form_class = AutorForm
+    titulo = "Nuevo autor"
+    success_url = reverse_lazy("catalogo:autor_lista")
+    success_message = "Autor «%(nombre)s %(apellido)s» creado."
+
+
+class AutorUpdateView(PermisoRequeridoMixin, FormularioMixin, UpdateView):
+    permiso = GESTIONAR_CATALOGO
+    model = Autor
+    form_class = AutorForm
+    titulo = "Editar autor"
+    success_url = reverse_lazy("catalogo:autor_lista")
+    success_message = "Autor «%(nombre)s %(apellido)s» actualizado."
+
+
+class AutorDeleteView(PermisoRequeridoMixin, BorrarView):
+    permiso = GESTIONAR_CATALOGO
+    model = Autor
+    success_url = reverse_lazy("catalogo:autor_lista")
+
+
+# Categorías
+
+class CategoriaListView(PermisoRequeridoMixin, ListView):
+    model = Categoria
+    paginate_by = 30
+
+    def get_queryset(self):
+        qs = Categoria.objects.annotate(total_libros=Count("libros")).order_by("nombre")
+        q = self.request.GET.get("q", "").strip()
+        if q:
+            qs = qs.filter(nombre__icontains=q)
+        return qs
+
+
+class CategoriaCreateView(PermisoRequeridoMixin, FormularioMixin, CreateView):
+    permiso = GESTIONAR_CATALOGO
+    model = Categoria
+    form_class = CategoriaForm
+    titulo = "Nueva categoría"
+    success_url = reverse_lazy("catalogo:categoria_lista")
+    success_message = "Categoría «%(nombre)s» creada."
+
+
+class CategoriaUpdateView(PermisoRequeridoMixin, FormularioMixin, UpdateView):
+    permiso = GESTIONAR_CATALOGO
+    model = Categoria
+    form_class = CategoriaForm
+    titulo = "Editar categoría"
+    success_url = reverse_lazy("catalogo:categoria_lista")
+    success_message = "Categoría «%(nombre)s» actualizada."
+
+
+class CategoriaDeleteView(PermisoRequeridoMixin, BorrarView):
+    permiso = GESTIONAR_CATALOGO
+    model = Categoria
+    success_url = reverse_lazy("catalogo:categoria_lista")
+
+
+# Ejemplares
+
 class EjemplarCreateView(PermisoRequeridoMixin, FormularioMixin, CreateView):
     permiso = GESTIONAR_CATALOGO
     model = Ejemplar
