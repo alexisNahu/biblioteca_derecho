@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block titulo %}Roles{% endblock %}
+
+{% block contenido %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3 mb-0">Roles</h1>
+  <a href="{% url 'usuarios:rol_nuevo' %}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Nuevo rol</a>
+</div>
+
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0 align-middle">
+      <thead><tr><th>Rol</th><th>Permisos</th><th class="text-center">Usuarios</th><th></th></tr></thead>
+      <tbody>
+      {% for rol in rol_list %}
+        <tr>
+          <td>{{ rol.nombre }}<div class="small text-body-secondary">{{ rol.descripcion }}</div></td>
+          <td>{% for p in rol.permisos.all %}<span class="badge text-bg-light border" title="{{ p.descripcion }}">{{ p.codigo }}</span> {% empty %}<span class="text-body-secondary">Sin permisos de gestión</span>{% endfor %}</td>
+          <td class="text-center">{{ rol.total_usuarios }}</td>
+          <td class="text-end text-nowrap">
+            <a href="{% url 'usuarios:rol_editar' rol.pk %}" class="btn btn-sm btn-outline-secondary" title="Editar"><i class="bi bi-pencil"></i></a>
+            <a href="{% url 'usuarios:rol_borrar' rol.pk %}" class="btn btn-sm btn-outline-danger" title="Borrar"><i class="bi bi-trash"></i></a>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -4,7 +4,7 @@ from django.contrib.auth.password_validation import validate_password
 
 from core.forms import BootstrapFormMixin
 
-from .models import Usuario
+from .models import Rol, Usuario
 
 
 class LoginForm(BootstrapFormMixin, AuthenticationForm):
@@ -50,3 +50,11 @@ class UsuarioCrearForm(UsuarioForm):
             usuario.save()
             self.save_m2m()
         return usuario
+
+
+class RolForm(BootstrapFormMixin, forms.ModelForm):
+    class Meta:
+        model = Rol
+        fields = ["nombre", "descripcion", "permisos"]
+        labels = {"descripcion": "Descripción"}
+        widgets = {"permisos": forms.CheckboxSelectMultiple}

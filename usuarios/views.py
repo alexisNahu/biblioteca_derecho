@@ -1,13 +1,13 @@
 from django.contrib import messages
 from django.contrib.auth.views import PasswordChangeView
-from django.db.models import Q
+from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, FormView, ListView, UpdateView
 
-from core.views import FormularioMixin
+from core.views import BorrarView, FormularioMixin
 
-from .forms import AsignarPasswordForm, CambiarPasswordForm, UsuarioCrearForm, UsuarioForm
+from .forms import AsignarPasswordForm, CambiarPasswordForm, RolForm, UsuarioCrearForm, UsuarioForm
 from .mixins import PermisoRequeridoMixin
 from .models import Rol, Usuario
 from .permisos import GESTIONAR_USUARIOS
@@ -86,6 +86,44 @@ class UsuarioPasswordView(PermisoRequeridoMixin, FormView):
         form.save()
         messages.success(self.request, f"Contraseña de {self.usuario.email} actualizada.")
         return redirect("usuarios:lista")
+
+
+class RolListView(PermisoRequeridoMixin, ListView):
+    permiso = GESTIONAR_USUARIOS
+    model = Rol
+
+    def get_queryset(self):
+        return Rol.objects.prefetch_related("permisos").annotate(total_usuarios=Count("usuarios")).order_by("nombre")
+
+
+class RolCreateView(PermisoRequeridoMixin, FormularioMixin, CreateView):
+    permiso = GESTIONAR_USUARIOS
+    model = Rol
+    form_class = RolForm
+    titulo = "Nuevo rol"
+    success_url = reverse_lazy("usuarios:rol_lista")
+    success_message = "Rol «%(nombre)s» creado."
+
+
+class RolUpdateView(PermisoRequeridoMixin, FormularioMixin, UpdateView):
+    permiso = GESTIONAR_USUARIOS
+    model = Rol
+    form_class = RolForm
+    titulo = "Editar rol"
+    success_url = reverse_lazy("usuarios:rol_lista")
+    success_message = "Rol «%(nombre)s» actualizado."
+
+
+class RolDeleteView(PermisoRequeridoMixin, BorrarView):
+    permiso = GESTIONAR_USUARIOS
+    model = Rol
+    success_url = reverse_lazy("usuarios:rol_lista")
+
+    def form_valid(self, form):
+        if self.object.usuarios.exists():
+            messages.error(self.request, f"No se puede borrar «{self.object}» porque tiene usuarios asignados.")
+            return redirect(self.success_url)
+        return super().form_valid(form)
 
 
 class MiPasswordView(PasswordChangeView):
